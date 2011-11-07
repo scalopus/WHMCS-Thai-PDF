@@ -12,8 +12,8 @@ use by your own risk.
 
 **Installation**
 
-    *Backup WHMCS Directory first
-    *Copy this code to WHMCS directory. Some of files will be replace by this modification
-    *All file end with 'tpl' in templates folder, move it to the template directory you use.
+* Backup WHMCS Directory first
+* Copy this code to WHMCS directory. Some of files will be replace by this modification
+* All file end with 'tpl' in templates folder, move it to the template directory you use.
 
 (If you don't know the template folder you use, login to WHMCS > General Setting )
