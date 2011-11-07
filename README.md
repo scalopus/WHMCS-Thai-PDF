@@ -1,12 +1,11 @@
 
-
 This is a complete modification for WHMCS to use Thai langauge in PDF documents.  
 
-** Disclaimer **
+**Disclaimer**
 
 use by your own risk.
 
-** This modification done by **
+**This modification done by**
 
 * WHMCS -- [found here](http://www.whmcs.com/)
 * TCPDF -- [found here](http://www.tcpdf.org/)
