@@ -1,110 +1,113 @@
 <?php
-
-// แก้ปัญหาเรื่องภาษาไทยไม่มี พวก ไม้มาลัย, ไม้ม้วน, ...
 $pdf -> setFontSubsetting(false) ;
+$fontname = $pdf->addTTFfont(K_PATH_FONTS . 'Arundinamono.ttf', 'TrueTypeUnicode', '', 32);
+# Logo
+if (file_exists(ROOTDIR.'/images/logo.png')) $pdf->Image(ROOTDIR.'/images/logo.png',20,25,75);
+elseif (file_exists(ROOTDIR.'/images/logo.jpg')) $pdf->Image(ROOTDIR.'/images/logo.jpg',20,25,75);
+else $pdf->Image(ROOTDIR.'/images/placeholder.png',20,25,75);
 
-$pdf->AddFont('arundinamono', '', K_PATH_FONTS . 'arundinamono.php');
-$pdf->AddFont('arundinamono', 'B', K_PATH_FONTS . 'arundinamobd.php');
-
-$pdf->Image(ROOTDIR.'/images/logo.jpg',20,25,50);
-
-$pdf->SetFont('arundinamono','',18);
-$pdf->Cell(0,6,$companyname,0,1,'R');
-foreach ($companyaddress AS $addressline) {
-	$pdf->Cell(0,4,trim($addressline),0,1,'R');
+# Company Details
+$pdf->SetFont($fontname,'',14);
+$pdf->Cell(0,6,trim($companyaddress[0]),0,1,'R');
+$pdf->SetFont($fontname,'',14);
+for ( $i = 1; $i <= ((count($companyaddress)>6) ? count($companyaddress) : 6); $i += 1) {
+	$pdf->Cell(0,4,trim($companyaddress[$i]),0,1,'R');
 }
+$pdf->Ln(5);
+
+$pdf->SetFont($fontname,'B',14);
+$pdf->SetX($pdf->GetX()+10);
+$pdf->Cell(20,6,$_LANG['quotenumber'],1,0,'C');
+$pdf->Cell(70,6,$_LANG['quotesubject'],1,0,'C');
+$pdf->Cell(35,6,$_LANG['quotedatecreated'],1,0,'C');
+$pdf->Cell(35,6,$_LANG['quotevaliduntil'],1,1,'C');
+
+$pdf->SetFont($fontname,'',14);
+$pdf->SetX($pdf->GetX()+10);
+$rowcount = $pdf->getNumLines($subject, 60);
+$height = $rowcount * 5;
+$pdf->MultiCell(20,$height,$quotenumber,1,'C',0,0);
+$pdf->MultiCell(70,$height,$subject,1,'C',0,0);
+$pdf->MultiCell(35,$height,$datecreated,1,'C',0,0);
+$pdf->MultiCell(35,$height,$validuntil,1,'C',0,1);
 
 $pdf->Ln(10);
 
-$pdf->SetFont('arundinamono','B',14);
-$pdf->SetX($pdf->GetX()+10);
-$pdf->Cell(20,6,"Quote #",1,0,'C');
-$pdf->Cell(60,6,"Subject",1,0,'C');
-$pdf->Cell(35,6,"Date Created",1,0,'C');
-$pdf->Cell(35,6,"Valid Until",1,1,'C');
-
-$pdf->SetFont('arundinamono','',14);
-$pdf->SetX($pdf->GetX()+10);
-$pdf->Cell(20,6,$quotenumber,1,0,'C');
-$pdf->Cell(60,6,$subject,1,0,'C');
-$pdf->Cell(35,6,$datecreated,1,0,'C');
-$pdf->Cell(35,6,$validuntil,1,0,'C');
-
-$pdf->Ln(20);
-
-$pdf->Cell(0,4,"Bill To",0,1);
+$pdf->SetFont($fontname,'B',14);
+$pdf->Cell(0,4,$_LANG['quoterecipient'],0,1);
+$pdf->SetFont($fontname,'',14);
 if ($clientsdetails["companyname"]) {
 	$pdf->Cell(0,4,$clientsdetails["companyname"],0,1,'L');
-	$pdf->Cell(0,4,$_LANG["invoicesattn"].": ".$clientsdetails["firstname"]." ".$clientsdetails["lastname"],0,1,'L'); } else {
+	$pdf->Cell(0,4,$_LANG["invoicesattn"].": ".$clientsdetails["firstname"]." ".$clientsdetails["lastname"],0,1,'L');
+} else {
 	$pdf->Cell(0,4,$clientsdetails["firstname"]." ".$clientsdetails["lastname"],0,1,'L');
 }
 $pdf->Cell(0,4,$clientsdetails["address1"],0,1,'L');
 if ($clientsdetails["address2"]) {
 	$pdf->Cell(0,4,$clientsdetails["address2"],0,1,'L');
 }
-$pdf->Cell(0,4,$clientsdetails["city"],0,1,'L');
-$pdf->Cell(0,4,$clientsdetails["state"],0,1,'L');
-$pdf->Cell(0,4,$clientsdetails["postcode"],0,1,'L');
+$pdf->Cell(0,4,$clientsdetails["city"].', '.$clientsdetails["state"].', '.$clientsdetails["postcode"],0,1,'L');
 $pdf->Cell(0,4,$clientsdetails["country"],0,1,'L');
 
 $pdf->Ln(10);
 
+if ($proposal) {
+    $pdf->SetFont($fontname,'',14);
+	$pdf->MultiCell(170,5,$proposal);
+	$pdf->Ln(10);
+}
+
 $pdf->SetDrawColor(200);
 $pdf->SetFillColor(239);
 
-$pdf->SetFont('arundinamono','B',14);
+$pdf->SetFont($fontname,'',14);
 
-$pdf->Cell(15,6,"Qty",1,0,'C','1');
-$pdf->Cell(80,6,"Description",1,0,'C','1');
-$pdf->Cell(25,6,"Unit Price",1,0,'C','1');
-$pdf->Cell(25,6,"Discount %",1,0,'C','1');
-$pdf->Cell(25,6,"Total",1,0,'C','1');
-
-$pdf->Ln();
-
-$pdf->SetFont('arundinamono','',14);
-
+$tblhtml = '<table width="100%" bgcolor="#ccc" cellspacing="1" cellpadding="2" border="0">
+    <tr height="30" bgcolor="#efefef" style="font-weight:bold;text-align:center;">
+        <td width="5%">'.$_LANG['quoteqty'].'</td>
+        <td width="45%">'.$_LANG['quotedesc'].'</td>
+        <td width="15%">'.$_LANG['quoteunitprice'].'</td>
+        <td width="15%">'.$_LANG['quotediscount'].'</td>
+        <td width="20%">'.$_LANG['quotelinetotal'].'</td>
+    </tr>';
 foreach ($lineitems AS $item) {
-
-    $numlines = ceil(strlen($item["description"])/55);
-    $cellheight = $numlines * 5;
-
-    $pdf->MultiCell(15,$cellheight,$item["qty"],1,'C','',0);
-    $pdf->MultiCell(80,$cellheight,$item["description"],1,'L','',0);
-    $pdf->MultiCell(25,$cellheight,$item["unitprice"],1,'C','',0);
-    $pdf->MultiCell(25,$cellheight,$item["discount"],1,'C','',0);
-    $pdf->MultiCell(25,$cellheight,$item["total"],1,'C','',1);
-
-    if ($pdf->GetY()>=250) $pdf->AddPage();
-
+    $tblhtml .= '
+    <tr bgcolor="#fff">
+        <td align="center">'.$item['qty'].'</td>
+        <td align="left">'.nl2br($item['description']).'<br /></td>
+        <td align="center">'.$item['unitprice'].'</td>
+        <td align="center">'.$item['discount'].'</td>
+        <td align="center">'.$item['total'].'</td>
+    </tr>';
 }
+$tblhtml .= '
+    <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+        <td align="right" colspan="4">'.$_LANG['invoicessubtotal'].'</td>
+        <td align="center">'.$subtotal.'</td>
+    </tr>';
+if ($taxlevel1['rate']>0) $tblhtml .= '
+    <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+        <td align="right" colspan="4">'.$taxlevel1['name'].' @ '.$taxlevel1['rate'].'%</td>
+        <td align="center">'.$tax1.'</td>
+    </tr>';
+if ($taxlevel2['rate']>0) $tblhtml .= '
+    <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+        <td align="right" colspan="4">'.$taxlevel2['name'].' @ '.$taxlevel2['rate'].'%</td>
+        <td align="center">'.$tax2.'</td>
+    </tr>';
+$tblhtml .= '
+    <tr height="30" bgcolor="#efefef" style="font-weight:bold;">
+        <td align="right" colspan="4">'.$_LANG['invoicestotal'].'</td>
+        <td align="center">'.$total.'</td>
+    </tr>
+</table>';
 
-$pdf->SetFont('arundinamono','B',14);
-
-$pdf->Cell(145,6,"Subtotal",1,0,'R','1');
-$pdf->Cell(25,6,$subtotal,1,0,'C','1');
-$pdf->Ln();
-
-if ($taxlevel1["rate"]>0) {
-    $pdf->Cell(145,6,$taxlevel1["name"]." @ ".$taxlevel1["rate"]."%",1,0,'R','1');
-    $pdf->Cell(25,6,$tax1,1,0,'C','1');
-    $pdf->Ln();
-}
-
-if ($taxlevel2["rate"]>0) {
-    $pdf->Cell(145,6,$taxlevel2["name"]." @ ".$taxlevel2["rate"]."%",1,0,'R','1');
-    $pdf->Cell(25,6,$tax2,1,0,'C','1');
-    $pdf->Ln();
-}
-
-$pdf->Cell(145,6,"Total",1,0,'R','1');
-$pdf->Cell(25,6,$total,1,0,'C','1');
-$pdf->Ln();
+$pdf->writeHTML($tblhtml, true, false, false, false, '');
 
 if ($notes) {
-	$pdf->Ln(10);
-    $pdf->SetFont('arundinamono','',14);
-	$pdf->MultiCell(170,5,$_LANG["invoicesnotes"].": $notes");
+	$pdf->Ln(6);
+    $pdf->SetFont($fontname,'',14);
+	$pdf->MultiCell(170,5,$_LANG['invoicesnotes'].": $notes");
 }
 
 ?>
